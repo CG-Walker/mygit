@@ -1,0 +1,5 @@
+build==1.2.1
+# Editable Git install with no remote (mygit==0.0.1)
+-e /home/walker/Projects/mygit
+packaging==24.1
+pyproject_hooks==1.1.0

@@ -1,0 +1,6 @@
+[project]
+name = "mygit"
+version = "0.0.1"
+
+[project.scripts]
+mygit = "mygit.cli:init"
