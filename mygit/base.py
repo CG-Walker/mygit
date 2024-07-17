@@ -81,6 +81,8 @@ def read_tree(tree_oid):
         with open(path, 'wb') as f:
             f.write(data.get_object(oid))
 
+Commit = namedtuple('Commit', ['tree', 'parent', 'message'])
+
 def commit(message):
     commit = f'tree {write_tree()}\n'
 
@@ -97,7 +99,6 @@ def commit(message):
 
     return oid
 
-Commit = namedtuple('Commit', ['tree', 'parent', 'message'])
 
 def get_commit(oid):
     parent = None
@@ -115,3 +116,8 @@ def get_commit(oid):
 
     message = '\n'.join(lines)
     return Commit(tree=tree, parent=parent, message=message)
+
+def checkout(oid):
+    commit = get_commit(oid)
+    read_tree(commit.tree)
+    data.set_HEAD(oid)
