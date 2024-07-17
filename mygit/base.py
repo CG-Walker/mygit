@@ -1,6 +1,7 @@
 import os
 import itertools
 import operator
+import string
 
 from collections import namedtuple
 
@@ -27,6 +28,26 @@ def write_tree(directory='.'):
     
     tree = ''.join(f'{type_} {oid} {name}\n' for name, oid, type_ in sorted(entries))
     return data.hash_object(tree.encode(), 'tree')
+
+def get_oid(name):
+    if name == '@': name = 'HEAD'
+
+    refs_to_try = [
+        f'{name}',
+        f'refs/{name}',
+        f'refs/tags{name}',
+        f'refs/tags/heads{name}',
+    ]
+
+    for ref in refs_to_try:
+        if data.get_ref(ref):
+            return data.get_ref(ref)
+        
+    is_hex = all(c in string.hexdigits for c in name)
+    if len(name) == 40 and is_hex:
+        return name
+    
+    assert False, f'Unknown name {name}'
 
 def is_ignored(path):
     return '.mygit' in path.split('/')
@@ -86,7 +107,7 @@ Commit = namedtuple('Commit', ['tree', 'parent', 'message'])
 def commit(message):
     commit = f'tree {write_tree()}\n'
 
-    HEAD = data.get_HEAD()
+    HEAD = data.get_ref('HEAD')
     if HEAD:
         commit += f'parent {HEAD}\n'
 
@@ -120,4 +141,7 @@ def get_commit(oid):
 def checkout(oid):
     commit = get_commit(oid)
     read_tree(commit.tree)
-    data.set_HEAD(oid)
+    data.update_ref('HEAD', oid)
+
+def create_tag(name, oid):
+    data.update_ref(f'refs/tags/{name}', oid)
