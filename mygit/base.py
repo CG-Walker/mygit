@@ -3,7 +3,7 @@ import itertools
 import operator
 import string
 
-from collections import namedtuple
+from collections import deque, namedtuple
 
 from . import data
 
@@ -145,3 +145,17 @@ def checkout(oid):
 
 def create_tag(name, oid):
     data.update_ref(f'refs/tags/{name}', oid)
+
+def iter_commits_and_parents(oids):
+    oids = deque(oids)
+    visited = set()
+
+    while oids:
+        oid = oids.popleft()
+        if not oid or oid in visited:
+            continue
+        visited.add(oid)
+        yield oid
+
+        commit = get_commit(oid)
+        oids.appendleft(commit.parent)
